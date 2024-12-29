@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Alignment and Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        canvas {
+            border: 2px solid black;
+            margin-bottom: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Alignment and Analysis</h1>
+    <input type="file" id="image1Input" accept="image/*" />
+    <input type="file" id="image2Input" accept="image/*" />
+    <button onclick="loadImages()">Load Images</button>
+
+    <canvas id="canvas1" class="hidden"></canvas>
+    <canvas id="canvas2" class="hidden"></canvas>
+
+    <div id="alignmentControls" class="hidden">
+        <h2>Select Four Key Points on First Image</h2>
+        <canvas id="alignmentCanvas1" width="800" height="600"></canvas>
+        <h2>Select Four Key Points on Second Image</h2>
+        <canvas id="alignmentCanvas2" width="800" height="600"></canvas>
+        <button onclick="confirmAlignment()">Confirm Alignment</button>
+    </div>
+
+    <div id="parameterInput" class="hidden">
+        <h2>Enter Parameters for Final Result</h2>
+        <label for="param1">Parameter 1:</label>
+        <input type="text" id="param1" />
+        <label for="param2">Parameter 2:</label>
+        <input type="text" id="param2" />
+        <button onclick="analyzeAndRender()">Analyze and Render</button>
+    </div>
+
+    <div id="result" class="hidden">
+        <h2>Result</h2>
+        <p id="resultText"></p>
+    </div>
+
+    <script>
+        let image1 = null;
+        let image2 = null;
+        let alignmentPoints1 = [];
+        let alignmentPoints2 = [];
+        const alignmentCanvas1 = document.getElementById('alignmentCanvas1');
+        const alignmentCtx1 = alignmentCanvas1.getContext('2d');
+        const alignmentCanvas2 = document.getElementById('alignmentCanvas2');
+        const alignmentCtx2 = alignmentCanvas2.getContext('2d');
+
+        function loadImages() {
+            const image1Input = document.getElementById('image1Input').files[0];
+            const image2Input = document.getElementById('image2Input').files[0];
+
+            if (!image1Input || !image2Input) {
+                alert("Please select both images.");
+                return;
+            }
+
+            image1 = new Image();
+            image2 = new Image();
+
+            image1.onload = () => {
+                const canvas1 = document.getElementById('canvas1');
+                const ctx1 = canvas1.getContext('2d');
+                canvas1.width = image1.width;
+                canvas1.height = image1.height;
+                ctx1.drawImage(image1, 0, 0);
+                canvas1.classList.remove('hidden');
+            };
+
+            image2.onload = () => {
+                const canvas2 = document.getElementById('canvas2');
+                const ctx2 = canvas2.getContext('2d');
+                canvas2.width = image2.width;
+                canvas2.height = image2.height;
+                ctx2.drawImage(image2, 0, 0);
+                canvas2.classList.remove('hidden');
+            };
+
+            image1.src = URL.createObjectURL(image1Input);
+            image2.src = URL.createObjectURL(image2Input);
+
+            document.getElementById('alignmentControls').classList.remove('hidden');
+            setupAlignmentCanvas();
+        }
+
+        function setupAlignmentCanvas() {
+            alignmentCanvas1.width = image1.width;
+            alignmentCanvas1.height = image1.height;
+            alignmentCtx1.drawImage(image1, 0, 0);
+
+            alignmentCanvas2.width = image2.width;
+            alignmentCanvas2.height = image2.height;
+            alignmentCtx2.drawImage(image2, 0, 0);
+
+            alignmentCanvas1.addEventListener('click', (event) => {
+                const rect = alignmentCanvas1.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                if (alignmentPoints1.length < 4) {
+                    alignmentPoints1.push({ x, y });
+                    alignmentCtx1.beginPath();
+                    alignmentCtx1.arc(x, y, 5, 0, 2 * Math.PI);
+                    alignmentCtx1.fillStyle = 'red';
+                    alignmentCtx1.fill();
+                } else {
+                    alert("You have already selected four points on the first image.");
+                }
+            });
+
+            alignmentCanvas2.addEventListener('click', (event) => {
+                const rect = alignmentCanvas2.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                if (alignmentPoints2.length < 4) {
+                    alignmentPoints2.push({ x, y });
+                    alignmentCtx2.beginPath();
+                    alignmentCtx2.arc(x, y, 5, 0, 2 * Math.PI);
+                    alignmentCtx2.fillStyle = 'blue';
+                    alignmentCtx2.fill();
+                } else {
+                    alert("You have already selected four points on the second image.");
+                }
+            });
+        }
+
+        function confirmAlignment() {
+            if (alignmentPoints1.length !== 4 || alignmentPoints2.length !== 4) {
+                alert("Please select exactly four key points on each image.");
+                return;
+            }
+
+            document.getElementById('alignmentControls').classList.add('hidden');
+            document.getElementById('parameterInput').classList.remove('hidden');
+        }
+
+        async function analyzeAndRender() {
+            const param1 = document.getElementById('param1').value;
+            const param2 = document.getElementById('param2').value;
+
+            if (!param1 || !param2) {
+                alert("Please enter all parameters.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image1', document.getElementById('image1Input').files[0]);
+            formData.append('image2', document.getElementById('image2Input').files[0]);
+            formData.append('points1', JSON.stringify(alignmentPoints1));
+            formData.append('points2', JSON.stringify(alignmentPoints2));
+            formData.append('param1', param1);
+            formData.append('param2', param2);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                document.getElementById('resultText').innerText = result.result;
+                document.getElementById('parameterInput').classList.add('hidden');
+                document.getElementById('result').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error analyzing:', error);
+                alert("An error occurred during analysis.");
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
