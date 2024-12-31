@@ -3,8 +3,8 @@
 
 ```
 # 1 创建环境
-conda create -n likyoo python=3.8
-conda activate likyoo
+conda create -n opencd python=3.8
+conda activate opencd
 
 # 2 安装torch
 # 方式1：
