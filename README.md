@@ -62,11 +62,3 @@ python try_my_change_detection.py #推理
 python yunsuanlvbo.py #图像处理
 python find_the_pos.py #输出处理，在原图像上标注变化区域
 ```
-
-@article{opencd,
-  title   = {{Open-CD}: A Comprehensive Toolbox for Change Detection},
-  author  = {Li, Kaiyu and Jiang, Jiawei and Codegoni, Andrea and Han, Chengxi and Deng, Yupeng and Chen, Keyan and Zheng, Zhuo and
-             Chen, Hao and Zou, Zhengxia and Shi, Zhenwei and Fang, Sheng and Meng, Deyu and Wang, Zhi and Cao, Xiangyong},
-  journal= {arXiv preprint arXiv:2407.15317},
-  year={2024}
-}
