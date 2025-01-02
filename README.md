@@ -1,3 +1,8 @@
+#### Download Weight 
+
+No need to train!
+
+[link]https://jbox.sjtu.edu.cn/l/dHHgS7
 
 #### Install
 
